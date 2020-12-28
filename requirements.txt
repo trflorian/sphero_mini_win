@@ -1,0 +1,2 @@
+asyncio
+git+git://github.com/trflorian/bleak#egg=bleak
