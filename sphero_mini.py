@@ -179,7 +179,7 @@ class SpheroMini:
             await asyncio.sleep(0.01)
             # TODO self.p.waitForNotifications(1)
             
-            if self.notification_seq == self.sequence-1: # use one less than sequence, because _send function increments it for next send. 
+            if self.notification_seq == (self.sequence-1) % 256: # use one less than sequence, because _send function increments it for next send.
                 print("[RESP {}] {}".format(self.sequence-1, self.notification_ack))
                 self.clear_notification()
                 break
