@@ -35,8 +35,10 @@ SystemInfoCommands = {"mainApplicationVersion": 0x00,   # 00
                       "something6": 0x12,           # 18    
                       "something7": 0x28}           # 40
 
+#special values, to be escaped in packet data encoding:
 sendPacketConstants = {"StartOfPacket": 0x8d,       # 141
-                       "EndOfPacket": 0xd8}         # 216
+                       "EndOfPacket": 0xd8,         # 216
+                       "ESC": 0xab}                 # 171
 
 userIOCommandIDs = {"allLEDs": 0x0e}                # 14
 
