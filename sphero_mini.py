@@ -142,7 +142,22 @@ class SpheroMini:
                     characteristic=self.API_V2_characteristic,
                     devID=deviceID['powerInfo'],
                     commID=powerCommandIDs["wake"],
-                    payload=[]) # empty payload  
+                    payload=[]) # empty payload
+
+    async def sleep(self, deepSleep=False):
+        '''
+        Put device to sleep or deep sleep (deep sleep needs USB power connected to wake up)
+        '''
+        if deepSleep:
+            sleepCommID=powerCommandIDs["deepSleep"]
+            if self.verbosity > 0:
+                print("[INFO] Going into deep sleep. Connect USB power to wake.")
+        else:
+            sleepCommID=powerCommandIDs["sleep"]
+        await self._send(characteristic=self.API_V2_characteristic,
+                   devID=deviceID['powerInfo'],
+                   commID=sleepCommID,
+                   payload=[]) #empty payload
 
     async def roll(self, speed=None, heading=None):
         '''

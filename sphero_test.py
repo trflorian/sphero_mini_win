@@ -12,6 +12,8 @@ async def run():
     # connect to sphero mini
     my_sphero = SpheroMini(address)
     await my_sphero.connect()
+
+    # wake sphero
     await my_sphero.wake()
 
     # roll in a square
@@ -24,8 +26,8 @@ async def run():
         await my_sphero.setLEDColor(red=randrange(255), \
             green=randrange(255),blue=randrange(255))
 
-    # stop rolling
-    await my_sphero.roll(speed=0,heading=0)
+    # put sphero into sleep mode
+    await my_sphero.sleep(deepSleep=False)
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
