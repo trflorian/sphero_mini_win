@@ -1,2 +1,2 @@
 asyncio
-git+https://github.com/hbldh/bleak#egg=bleak
+git+https://github.com/trflorian/bleak#egg=bleak
