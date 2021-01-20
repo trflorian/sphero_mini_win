@@ -16,11 +16,10 @@ class SpheroMini:
     async def connect(self):
         self.client = BleakClient(self.address)
         await self.client.connect(timeout=5.0)
-        connected = await self.client.is_connected()
-        print("Connected: {0}".format(connected))
+        print("Connected: {0}".format(self.client.is_connected))
 
         # cancel if not connected
-        if not connected:
+        if not self.client.is_connected:
             return False
         
         # get device name
@@ -36,27 +35,21 @@ class SpheroMini:
         DFU_characteristic = "00020002-574f-4f20-5370-6865726f2121"
         DFU2_characteristic = "00020004-574f-4f20-5370-6865726f2121"
         services = await self.client.get_services()
-        API_descriptor = services.get_characteristic(self.API_V2_characteristic).descriptors[0]
-        DFU_descriptor = services.get_characteristic(DFU_characteristic).descriptors[0]
 
         # Unlock code: prevent the sphero mini from going to sleep again after 10 seconds
         print("[INIT] Writing AntiDOS characteristic unlock code")
-        await self.client.write_gatt_char(AntiDOS_characteristic,"usetheforce...band".encode(),response=True)
+        await self.client.write_gatt_char(AntiDOS_characteristic,b"usetheforce...band",response=True)
 
         # Enable DFU notifications:
-        print("[INIT] Configuring DFU descriptor")
-        # current_value = await client.read_gatt_descriptor(DFU_descriptor.handle)
-        # print("current dfu descriptor: ",current_value)
-        await self.client.write_gatt_descriptor(DFU_descriptor.handle,struct.pack('<bb', 0x01, 0x00))
+        print("[INIT] Enabling DFU notifications")
+        await self.client.start_notify(DFU_characteristic, self.handleNotificationDFU)
 
         # No idea what this is for. Possibly a device ID of sorts? Read request returns '00 00 09 00 0c 00 02 02':
         print("[INIT] Reading DFU2 characteristic")
         await self.client.read_gatt_char(DFU2_characteristic)
 
         # Enable API notifications:
-        print("[INIT] Configuring API dectriptor")
-        await self.client.write_gatt_descriptor(API_descriptor.handle,struct.pack('<bb', 0x01, 0x00))
-        
+        print("[INIT] Enabling API_v2 notifications")
         # enable notifications on api characteristic
         await self.client.start_notify(self.API_V2_characteristic, self.handleNotification)
 
@@ -228,6 +221,9 @@ class SpheroMini:
             if time.time() > start + 10:
                 print("Timeout waiting for acknowledgement: {}/{}".format(ack, self.sequence), file=sys.stderr)
                 break
+
+    def handleNotificationDFU(self, sender, data):
+        pass
 
     def handleNotification(self, sender, data):
         """
