@@ -57,6 +57,9 @@ class SpheroMini:
 
         return True
 
+    async def disconnect(self):
+        return await self.client.disconnect()
+
     async def _send(self, characteristic=None, devID=None, commID=None, payload=[]):
         '''
         Generic "send" method, used by other methods to encode and send commands (or responses) with command ID,
