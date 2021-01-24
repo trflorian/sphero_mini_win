@@ -65,9 +65,9 @@ class SpheroMini:
         Generic "send" method, used by other methods to encode and send commands (or responses) with command ID,
         sequence number, optional payload and calculated checksum to a specified device ID. For internal use only.
 
-        Sphero API (https://sdk.sphero.com/docs/api_spec/general_api/), single packet structure (command/response):
+        Sphero API (https://sdk.sphero.com/docs/api_spec/general_api/), single packet structure for command & response:
         SOP - FLAG(s) [- TID - SID] - DID - CID - SEQ - [ERR] - [payload] - CHK - EOP // SOP,CHK,EOP excl. from checksum
-        variable length of packet = 10Bytes + 0..buffer size of payload supporting multiple data types
+        SpheroMini uses simplest format (no TID/SID/extFLAG) -> length = 7 + payload_length, Flag bit4,5,7=0
         - SOP: start of packet,  byte always 0x8D
         - FLAG(s): Bit-flags, one or multiple bytes, see sphero_constants.py
             bit0: command(0); response(1)
@@ -77,12 +77,12 @@ class SpheroMini:
             bit4: no TID(0); packet has TID in header(1)
             bit5: no SID(0); packet has SID in header(1)
             bit6: unused
-            bit7 extends FLAG by next Byte
+            bit7: single FLAG(0); extended FLAG in next Byte(1)
         - [TID/SID: target/source address by port ID (upper nibble) and node ID (lower nibble), optional see FLAG(s)]
         - DID: virtual device ID, see sphero_constants.py
         - CID: command ID, see sphero_constants.py
         - SEQ: sequence number token to link commands with responses
-        - [ERR: command error code fo response, optional - see FLAG(s)]
+        - [ERR: command error code for response, optional - see FLAG(s)]
         - payload: Data of varying number of bytes (incl. none), depending on the command/response
         - CHK: checksum as sum of all bytes (excluding SOP & EOP) mod 256, bit-inverted, see below for calculation
         - EOP: end of packet, byte always 0xD8
@@ -123,7 +123,7 @@ class SpheroMini:
         output = b"".join([x.to_bytes(1, byteorder='big') for x in sendBytes])
 
         #send to specified characteristic:
-        await self.client.write_gatt_char(characteristic,output,response=True)
+        await self.client.write_gatt_char(characteristic, output, response=True)
 
 
     async def wake(self):
@@ -190,6 +190,17 @@ class SpheroMini:
                   devID = deviceID['userIO'], # 0x1a
                   commID = userIOCommandIDs["allLEDs"], # 0x0e
                   payload = [0x00, 0x0e, red, green, blue])
+
+    async def getVoltage(self):
+        '''
+        Get battery voltage
+        '''
+        print("[SEND {}] Getting battery voltage]".format(self.sequence))
+
+        await self._send(characteristic = self.API_V2_characteristic,
+                  devID = deviceID['powerInfo'],  # 0x13
+                  commID = powerCommandIDs["batteryVoltage"],  # 0x03
+                  payload = [])
 
     def clear_notification(self):
         self.notification_ack = "DEFAULT ACK"

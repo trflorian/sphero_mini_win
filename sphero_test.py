@@ -29,6 +29,11 @@ async def run():
                 green=randrange(255),blue=randrange(255))
             await my_sphero.getAcknowledgement("led")
 
+        # battery voltage
+        await my_sphero.getVoltage()
+        await my_sphero.getAcknowledgement("voltage")
+        await asyncio.sleep(1)
+
     finally:
         await my_sphero.disconnect()
 
